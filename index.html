@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IDeRMAX - 我的世界MTR服务器</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入Google Fonts - Minecraft风格字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Minecraft:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1E88E5',
+            secondary: '#26A69A',
+            accent: '#FF9800',
+            dark: '#121212',
+            light: '#F5F5F5'
+          },
+          fontFamily: {
+            minecraft: ['Minecraft', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- 自定义样式 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .text-shadow {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+      .glow {
+        box-shadow: 0 0 10px rgba(30, 136, 229, 0.7);
+      }
+      .bg-blur {
+        backdrop-filter: blur(8px);
+      }
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+      .img-zoom-container {
+        overflow: hidden;
+        position: relative;
+      }
+      .img-zoom-container img {
+        transition: transform 0.3s ease;
+        object-fit: contain;
+      }
+      .img-zoom-container:hover img {
+        transform: scale(1.05);
+      }
+      .img-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .img-zoom-container:hover .img-overlay {
+        opacity: 1;
+      }
+    }
+    
+    /* 滚动条样式 */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1E1E1E;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1E88E5;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #1565C0;
+    }
+    
+    /* 动画定义 */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    /* 粒子背景容器 */
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+  </style>
+</head>
+
+<body class="bg-dark text-light font-minecraft overflow-x-hidden">
+  <!-- 粒子背景 -->
+  <div id="particles-js"></div>
+  
+  <!-- 导航栏 -->
+  <nav id="navbar" class="fixed w-full z-50 transition-all duration-300">
+    <div class="bg-dark/80 bg-blur border-b border-primary/30">
+      <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <!-- Logo -->
+        <a href="#" class="flex items-center space-x-2">
+          <img src="https://picsum.photos/50/50" alt="IDeRMAX Logo" class="w-10 h-10 rounded-lg">
+          <span class="text-2xl font-bold text-primary">IDeRMAX</span>
+        </a>
+        
+        <!-- 桌面端菜单 -->
+        <div class="hidden md:flex items-center space-x-8">
+          <a href="#about" class="nav-link hover:text-primary transition-colors">关于我们</a>
+          <a href="#download" class="nav-link hover:text-primary transition-colors">下载整合包</a>
+          <a href="#map" class="nav-link hover:text-primary transition-colors">线路图</a>
+          <a href="#community" class="nav-link hover:text-primary transition-colors">社区</a>
+        </div>
+        
+        <!-- 移动端菜单按钮 -->
+        <button id="menu-toggle" class="md:hidden text-2xl">
+          <i class="fa fa-bars"></i>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 移动端菜单 -->
+    <div id="mobile-menu" class="md:hidden bg-dark/95 bg-blur border-b border-primary/30 h-0 overflow-hidden transition-all duration-300">
+      <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+        <a href="#about" class="py-2 hover:text-primary transition-colors">关于我们</a>
+        <a href="#download" class="py-2 hover:text-primary transition-colors">下载整合包</a>
+        <a href="#map" class="py-2 hover:text-primary transition-colors">线路图</a>
+        <a href="#community" class="py-2 hover:text-primary transition-colors">社区</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 英雄区域 -->
+  <header class="relative min-h-screen flex items-center pt-16">
+    <div class="container mx-auto px-4 py-20 relative z-10">
+      <div class="flex flex-col md:flex-row items-center">
+        <div class="md:w-1/2 mb-10 md:mb-0">
+          <h1 class="text-[clamp(2.5rem,8vw,4.5rem)] font-bold leading-tight text-shadow">
+            <span class="text-primary">IDeRMAX</span>
+            <br>我的世界服务器
+          </h1>
+          <p class="mt-6 text-xl text-gray-300 max-w-lg">
+            欢迎加入我们的MTR模组服务器，体验最精彩的虚拟铁路世界！与全球玩家一起建设、探索和交流。
+          </p>
+          <div class="mt-10 flex flex-wrap gap-4">
+            <a href="#download" class="btn bg-primary hover:bg-primary/80 text-white font-bold py-3 px-8 rounded-lg transition-all transform hover:scale-105 glow">
+              <i class="fa fa-download mr-2"></i>下载整合包
+            </a>
+            <a href="#map" class="btn bg-transparent border-2 border-primary hover:bg-primary/10 text-white font-bold py-3 px-8 rounded-lg transition-all transform hover:scale-105">
+              <i class="fa fa-map mr-2"></i>查看线路图
+            </a>
+          </div>
+          
+          <!-- 基础信息 -->
+          <div class="mt-12 grid grid-cols-2 sm:grid-cols-2 gap-4">
+            <div class="bg-dark/50 border border-primary/30 rounded-lg p-4 text-center">
+              <div class="text-3xl font-bold text-accent">1.20.1</div>
+              <div class="text-sm text-gray-400">游戏版本</div>
+            </div>
+            <div class="bg-dark/50 border border-primary/30 rounded-lg p-4 text-center">
+              <div class="text-3xl font-bold text-accent">MTR</div>
+              <div class="text-sm text-gray-400">核心模组</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 右侧动画区域 -->
+        <div class="md:w-1/2 flex justify-center">
+          <div class="relative w-full max-w-md animate-float">
+            <img src="https://picsum.photos/600/600" alt="Minecraft Train" class="w-full h-auto rounded-xl glow">
+            <div class="absolute -bottom-6 -right-6 bg-accent text-dark font-bold p-3 rounded-lg shadow-lg transform rotate-6">
+              全新版本上线!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 波浪底部装饰 -->
+    <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] rotate-180">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-[60px] md:h-[100px]">
+        <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" class="fill-primary"></path>
+        <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" class="fill-primary"></path>
+        <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" class="fill-dark"></path>
+      </svg>
+    </div>
+  </header>
+
+  <!-- 关于我们 -->
+  <section id="about" class="py-20 bg-gradient-to-b from-dark to-dark/90">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">关于 <span class="text-primary">IDeRMAX</span></h2>
+        <div class="w-20 h-1 bg-primary mx-auto"></div>
+      </div>
+      
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <h3 class="text-2xl font-bold mb-6">打造最好的MTR服务器体验</h3>
+          <p class="text-gray-300 mb-6">
+            IDeRMAX是一个专注于Minecraft铁路模组(MTR)的服务器，我们致力于为玩家提供最优质的游戏体验。自2025年成立以来，我们不断改进和扩展，打造了一个充满活力的社区和丰富的游戏内容。
+          </p>
+          <p class="text-gray-300 mb-6">
+            我们的服务器拥有完善的铁路系统、精美的建筑和友好的社区氛围。无论你是铁路建设爱好者，还是喜欢探索和社交的玩家，这里都能找到属于你的乐趣。
+          </p>
+          
+          <!-- 特色列表 -->
+          <div class="mt-8 grid grid-cols-2 gap-4">
+            <div class="flex items-start space-x-3">
+              <div class="mt-1 text-primary text-xl">
+                <i class="fa fa-check-circle"></i>
+              </div>
+              <div>
+                <h4 class="font-bold mb-1">稳定运行</h4>
+                <p class="text-sm text-gray-400">24/7全天候运行，低延迟</p>
+              </div>
+            </div>
+            <div class="flex items-start space-x-3">
+              <div class="mt-1 text-primary text-xl">
+                <i class="fa fa-check-circle"></i>
+              </div>
+              <div>
+                <h4 class="font-bold mb-1">丰富内容</h4>
+                <p class="text-sm text-gray-400">多样化的铁路线路和建筑</p>
+              </div>
+            </div>
+            <div class="flex items-start space-x-3">
+              <div class="mt-1 text-primary text-xl">
+                <i class="fa fa-check-circle"></i>
+              </div>
+              <div>
+                <h4 class="font-bold mb-1">活跃社区</h4>
+                <p class="text-sm text-gray-400">友好的玩家和专业的管理团队</p>
+              </div>
+            </div>
+            <div class="flex items-start space-x-3">
+              <div class="mt-1 text-primary text-xl">
+                <i class="fa fa-check-circle"></i>
+              </div>
+              <div>
+                <h4 class="font-bold mb-1">定期更新</h4>
+                <p class="text-sm text-gray-400">不断添加新内容和功能</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div class="rounded-lg overflow-hidden transform rotate-3 hover:rotate-0 transition-transform duration-300">
+            <img src="https://picsum.photos/400/300?random=1" alt="服务器截图" class="w-full h-auto">
+          </div>
+          <div class="rounded-lg overflow-hidden transform -rotate-3 hover:rotate-0 transition-transform duration-300 mt-8">
+            <img src="https://picsum.photos/400/300?random=2" alt="服务器截图" class="w-full h-auto">
+          </div>
+          <div class="rounded-lg overflow-hidden transform rotate-2 hover:rotate-0 transition-transform duration-300">
+            <img src="https://picsum.photos/400/300?random=3" alt="服务器截图" class="w-full h-auto">
+          </div>
+          <div class="rounded-lg overflow-hidden transform -rotate-2 hover:rotate-0 transition-transform duration-300 mt-8">
+            <img src="https://picsum.photos/400/300?random=4" alt="服务器截图" class="w-full h-auto">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 下载整合包 -->
+  <section id="download" class="py-20 bg-primary/5">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">下载 <span class="text-primary">整合包</span></h2>
+        <div class="w-20 h-1 bg-primary mx-auto"></div>
+        <p class="mt-6 text-gray-300 max-w-2xl mx-auto">
+          获取IDeRMAX服务器专属整合包，包含所有必要的模组和资源包，让你轻松加入我们的世界。
+        </p>
+      </div>
+      
+      <div class="max-w-3xl mx-auto bg-dark/70 border border-primary/30 rounded-xl overflow-hidden">
+        <div class="p-8">
+          <div class="flex flex-col md:flex-row items-center">
+            <div class="mb-6 md:mb-0 md:mr-8">
+              <div class="w-32 h-32 bg-primary/20 rounded-full flex items-center justify-center">
+                <i class="fa fa-download text-5xl text-primary"></i>
+              </div>
+            </div>
+            
+            <div class="flex-1 text-center md:text-left">
+              <h3 class="text-2xl font-bold mb-2">IDeRMAX.mrpack</h3>
+              <p class="text-gray-400 mb-6">版本 1.20.1 | 大小: 350.4KB</p>
+              
+              <div class="flex flex-wrap justify-center md:justify-start gap-4">
+                <a href="https://nepnisa.github.io/idermax/qq" target="_blank" class="btn bg-primary hover:bg-primary/80 text-white font-bold py-2 px-6 rounded-lg transition-all transform hover:scale-105 flex items-center">
+                  <i class="fa fa-qq mr-2"></i>加入QQ群获取
+                </a>
+                <a href="#community" class="btn bg-transparent border-2 border-primary hover:bg-primary/10 text-white font-bold py-2 px-6 rounded-lg transition-all transform hover:scale-105 flex items-center">
+                  <i class="fa fa-users mr-2"></i>查看社区指南
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 安装说明 -->
+          <div class="mt-10">
+            <h4 class="text-xl font-bold mb-4">获取和安装说明</h4>
+            <div class="grid md:grid-cols-3 gap-6">
+              <div class="bg-dark/50 rounded-lg p-4 border border-primary/20">
+                <div class="text-primary text-2xl mb-2">
+                  <i class="fa fa-step-forward"></i>
+                </div>
+                <h5 class="font-bold mb-2">步骤 1</h5>
+                <p class="text-sm text-gray-400">加入我们的QQ群 (群号: 点击上方按钮)</p>
+              </div>
+              <div class="bg-dark/50 rounded-lg p-4 border border-primary/20">
+                <div class="text-primary text-2xl mb-2">
+                  <i class="fa fa-step-forward"></i>
+                </div>
+                <h5 class="font-bold mb-2">步骤 2</h5>
+                <p class="text-sm text-gray-400">在群文件中找到整合包下载链接</p>
+              </div>
+              <div class="bg-dark/50 rounded-lg p-4 border border-primary/20">
+                <div class="text-primary text-2xl mb-2">
+                  <i class="fa fa-step-forward"></i>
+                </div>
+                <h5 class="font-bold mb-2">步骤 3</h5>
+                <p class="text-sm text-gray-400">下载并导入mrpack文件到你的启动器</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 社区 -->
+  <section id="community" class="py-20 bg-primary/5">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">加入 <span class="text-primary">我们的社区</span></h2>
+        <div class="w-20 h-1 bg-primary mx-auto"></div>
+        <p class="mt-6 text-gray-300 max-w-2xl mx-auto">
+          与其他玩家交流、分享经验、获取最新资讯和活动信息。
+        </p>
+      </div>
+      
+      <div class="grid md:grid-cols-3 gap-8">
+        <!-- QQ群 -->
+        <a href="https://nepnisa.github.io/idermax/qq" target="_blank" class="group">
+          <div class="bg-dark/70 border border-primary/30 rounded-xl p-6 h-full transition-all duration-300 hover:border-primary hover:glow">
+            <div class="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-6 group-hover:bg-primary/30 transition-colors">
+              <i class="fa fa-qq text-3xl text-primary"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3">QQ群</h3>
+            <p class="text-gray-400 mb-6">加入我们的QQ群，与其他玩家实时交流</p>
+            <div class="inline-flex items-center text-primary group-hover:underline">
+              <span>加入群聊</span>
+              <i class="fa fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+            </div>
+          </div>
+        </a>
+        
+        <!-- Discord -->
+        <a href="https://discord.com/channels/1441662894096912479/1441662895598604300" target="_blank" class="group">
+          <div class="bg-dark/70 border border-primary/30 rounded-xl p-6 h-full transition-all duration-300 hover:border-primary hover:glow">
+            <div class="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-6 group-hover:bg-primary/30 transition-colors">
+              <i class="fa fa-comment text-3xl text-primary"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3">Discord</h3>
+            <p class="text-gray-400 mb-6">加入我们的Discord服务器，获取最新资讯</p>
+            <div class="inline-flex items-center text-primary group-hover:underline">
+              <span>访问Discord</span>
+              <i class="fa fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+            </div>
+          </div>
+        </a>
+        
+        <!-- 哔哩哔哩 -->
+        <a href="https://space.bilibili.com/3493293547588464" target="_blank" class="group">
+          <div class="bg-dark/70 border border-primary/30 rounded-xl p-6 h-full transition-all duration-300 hover:border-primary hover:glow">
+            <div class="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-6 group-hover:bg-primary/30 transition-colors">
+              <i class="fa fa-play-circle text-3xl text-primary"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3">哔哩哔哩</h3>
+            <p class="text-gray-400 mb-6">关注我们的B站账号，观看精彩视频</p>
+            <div class="inline-flex items-center text-primary group-hover:underline">
+              <span>访问B站</span>
+              <i class="fa fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+      
+      <!-- 社区指南 -->
+      <div class="mt-12 bg-dark/70 border border-primary/30 rounded-xl p-6">
+        <h3 class="text-xl font-bold mb-6">社区指南</h3>
+        
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <h4 class="font-bold mb-3 flex items-center">
+              <i class="fa fa-check-circle text-primary mr-2"></i>
+              社区规则
+            </h4>
+            <ul class="space-y-2 text-gray-400">
+              <li class="flex items-start">
+                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                <span>尊重他人，友好交流</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                <span>禁止发布不当内容</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                <span>遵守服务器规定</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                <span>禁止作弊和利用漏洞</span>
+              </li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 class="font-bold mb-3 flex items-center">
+              <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+              如何参与
+            </h4>
+            <ul class="space-y-2 text-gray-400">
+              <li class="flex items-start">
+                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                <span>加入我们的社区平台</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                <span>参与讨论和活动</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                <span>分享你的作品和经验</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                <span>帮助其他新玩家</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark/90 border-t border-primary/30 py-12">
+    <div class="container mx-auto px-4">
+      <div class="grid md:grid-cols-3 gap-8">
+        <!-- Logo和简介 -->
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <img src="https://picsum.photos/50/50" alt="IDeRMAX Logo" class="w-10 h-10 rounded-lg">
+            <span class="text-2xl font-bold text-primary">IDeRMAX</span>
+          </div>
+          <p class="text-gray-400 mb-4">
+            专注于Minecraft MTR模组的服务器，打造最好的铁路模拟体验。
+          </p>
+          <div class="flex space-x-4">
+            <a href="https://qm.qq.com/q/ZE2Dnusfuw" target="_blank" class="text-gray-400 hover:text-primary transition-colors">
+              <i class="fa fa-qq text-xl"></i>
+            </a>
+            <a href="https://discord.com/channels/1441662894096912479/1441662895598604300" target="_blank" class="text-gray-400 hover:text-primary transition-colors">
+              <i class="fa fa-comment text-xl"></i>
+            </a>
+            <a href="https://space.bilibili.com/3493293547588464" target="_blank" class="text-gray-400 hover:text-primary transition-colors">
+              <i class="fa fa-play-circle text-xl"></i>
+            </a>
+          </div>
+        </div>
+        
+        <!-- 快速链接 -->
+        <div>
+          <h4 class="text-lg font-bold mb-4">快速链接</h4>
+          <ul class="space-y-2">
+            <li>
+              <a href="#about" class="text-gray-400 hover:text-primary transition-colors">关于我们</a>
+            </li>
+            <li>
+              <a href="#download" class="text-gray-400 hover:text-primary transition-colors">下载整合包</a>
+            </li>
+            <li>
+              <a href="#map" class="text-gray-400 hover:text-primary transition-colors">线路图</a>
+            </li>
+            <li>
+              <a href="#community" class="text-gray-400 hover:text-primary transition-colors">社区</a>
+            </li>
+          </ul>
+        </div>
+        
+        <!-- 网站建设者和订阅 -->
+        <div>
+          <h4 class="text-lg font-bold mb-4">网站建设者</h4>
+          <a href="https://space.bilibili.com/1276504982" target="_blank" class="flex items-center space-x-2 text-gray-400 hover:text-primary transition-colors mb-6">
+            <i class="fa fa-user text-primary"></i>
+            <span>Bilibili: 1276504982</span>
+          </a>
+          <h4 class="text-lg font-bold mb-4">订阅更新</h4>
+          <p class="text-gray-400 mb-4">
+            输入你的邮箱，获取服务器最新资讯和活动信息。
+          </p>
+          <form class="flex">
+            <input type="email" placeholder="你的邮箱" class="bg-dark/50 border border-primary/30 rounded-l-lg px-4 py-2 flex-1 focus:outline-none focus:border-primary">
+            <button type="submit" class="bg-primary hover:bg-primary/80 text-white font-bold py-2 px-4 rounded-r-lg transition-colors">
+              订阅
+            </button>
+          </form>
+        </div>
+      </div>
+      
+      <div class="mt-12 pt-6 border-t border-primary/30 text-center">
+        <p class="text-gray-500">
+          &copy; 2023 IDeRMAX Server. 保留所有权利。
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 返回顶部按钮 -->
+  <button id="back-to-top" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/80 text-white w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 invisible z-50">
+    <i class="fa fa-arrow-up"></i>
+  </button>
+
+  <!-- JavaScript -->
+  <script>
+    // 导航栏滚动效果
+    const navbar = document.getElementById('navbar');
+    const backToTop = document.getElementById('back-to-top');
+    
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 50) {
+        navbar.classList.add('bg-dark/90', 'shadow-lg');
+        navbar.classList.remove('bg-transparent');
+        
+        backToTop.classList.remove('opacity-0', 'invisible');
+        backToTop.classList.add('opacity-100', 'visible');
+      } else {
+        navbar.classList.remove('bg-dark/90', 'shadow-lg');
+        navbar.classList.add('bg-transparent');
+        
+        backToTop.classList.add('opacity-0', 'invisible');
+        backToTop.classList.remove('opacity-100', 'visible');
+      }
+    });
+    
+    // 移动端菜单切换
+    const menuToggle = document.getElementById('menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    menuToggle.addEventListener('click', function() {
+      if (mobileMenu.classList.contains('h-0')) {
+        mobileMenu.classList.remove('h-0');
+        mobileMenu.classList.add('h-auto');
+        menuToggle.innerHTML = '<i class="fa fa-times"></i>';
+      } else {
+        mobileMenu.classList.add('h-0');
+        mobileMenu.classList.remove('h-auto');
+        menuToggle.innerHTML = '<i class="fa fa-bars"></i>';
+      }
+    });
+    
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+          
+          // 关闭移动菜单
+          if (!mobileMenu.classList.contains('h-0')) {
+            mobileMenu.classList.add('h-0');
+            mobileMenu.classList.remove('h-auto');
+            menuToggle.innerHTML = '<i class="fa fa-bars"></i>';
+          }
+        }
+      });
+    });
+    
+    // 返回顶部
+    backToTop.addEventListener('click', function() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+    
+    // 粒子背景效果
+    function initParticles() {
+      const particlesContainer = document.getElementById('particles-js');
+      
+      // 创建粒子
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        
+        // 随机样式
+        const size = Math.random() * 4 + 1;
+        const x = Math.random() * 100;
+        const y = Math.random() * 100;
+        const duration = Math.random() * 60 + 30;
+        const delay = Math.random() * 10;
+        
+        particle.style.cssText = `
+          position: absolute;
+          width: ${size}px;
+          height: ${size}px;
+          background-color: rgba(30, 136, 229, ${Math.random() * 0.5 + 0.2});
+          border-radius: 50%;
+          top: ${y}%;
+          left: ${x}%;
+          opacity: 0;
+          animation: float ${duration}s ease-in-out ${delay}s infinite;
+        `;
+        
+        particlesContainer.appendChild(particle);
+      }
+      
+      // 添加动画关键帧
+      const styleSheet = document.createElement('style');
+      styleSheet.textContent = `
+        @keyframes float {
+          0% {
+            transform: translateY(0px) translateX(0px);
+            opacity: 0;
+          }
+          20% {
+            opacity: 1;
+          }
+          80% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(-100px) translateX(20px);
+            opacity: 0;
+          }
+        }
+      `;
+      document.head.appendChild(styleSheet);
+    }
+    
+    // 页面加载完成后初始化
+    window.addEventListener('DOMContentLoaded', function() {
+      initParticles();
+      
+      // 检查线路图图片是否加载成功
+      const mapImage = document.querySelector('#map img');
+      mapImage.addEventListener('error', function() {
+        // 图片加载失败时显示备用内容
+        this.src = 'https://picsum.photos/1200/500?random=5';
+        this.alt = '不好意思，图片走丢了。';
+        document.querySelector('#map .img-overlay button').textContent = '图片走丢了';
+      });
+    });
+  </script>
+</body>
+</html>
